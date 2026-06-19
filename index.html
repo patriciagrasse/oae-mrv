@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAE Credit Decomposition — NPSP Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a1a;--ink2:#444;--ink3:#777;--rule:#d0d0c8;--bg:#faf9f6;--card:#fff;
+  --ocean:#1a4a6b;--ocean2:#2a6fa8;--teal-lt:#d4ede8;
+  --amber:#a85c00;--coral:#b84035;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html{font-family:var(--sans);color:var(--ink);background:var(--bg);font-size:15px;line-height:1.6}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+
+.wrap{width:100%;max-width:720px}
+
+.header{margin-bottom:1.75rem}
+.badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ocean2);border:1px solid #bcd;border-radius:3px;padding:3px 8px;
+  display:inline-block;margin-bottom:.6rem}
+h1{font-size:1.15rem;font-weight:500;color:var(--ocean);line-height:1.4;margin-bottom:.3rem}
+.sub{font-size:12px;color:var(--ink3)}
+.sub a{color:var(--ocean2);text-decoration:none}
+.sub a:hover{text-decoration:underline}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1.75rem}
+
+.controls{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.ctrl{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink3)}
+.ctrl label{width:220px;flex-shrink:0;line-height:1.4}
+.ctrl label span{font-size:10px;color:#aaa;display:block}
+.ctrl input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;
+  background:var(--rule);outline:none;cursor:pointer}
+.ctrl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  border-radius:50%;background:var(--ocean);border:2px solid #fff;
+  box-shadow:0 0 0 1px var(--ocean);cursor:pointer}
+.ctrl-val{width:34px;text-align:right;font-family:var(--mono);font-size:12px;
+  font-weight:500;color:var(--ink)}
+
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:1rem}
+.bar-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:7px}
+.stack{height:260px;width:100%;display:flex;flex-direction:column-reverse;
+  border-radius:5px;overflow:hidden;position:relative;border:1px solid var(--rule)}
+.seg{width:100%;display:flex;align-items:center;justify-content:center;
+  transition:height .28s ease;overflow:hidden;font-family:var(--mono);font-size:11px;font-weight:500}
+.tline{position:absolute;left:0;right:0;height:1.5px;background:var(--ink);
+  opacity:.4;z-index:10;pointer-events:none;transition:bottom .28s ease}
+.tline-tag{position:absolute;right:5px;top:-13px;font-size:9px;
+  font-family:var(--mono);color:var(--ink3);white-space:nowrap}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:.85rem}
+.metric{background:var(--bg);border:1px solid var(--rule);border-radius:5px;padding:.75rem 1rem}
+.metric-val{font-size:24px;font-weight:500;font-family:var(--mono);color:var(--ocean)}
+.metric-lbl{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.4}
+
+.gain{padding:.75rem 1rem;background:var(--teal-lt);border:1px solid #a8d8d0;
+  border-radius:5px;font-size:12px;color:#0a4d3e;line-height:1.6;margin-bottom:.85rem}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:1rem}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.caption{font-size:11px;color:var(--ink3);line-height:1.65;
+  padding-top:1rem;border-top:1px solid var(--rule)}
+.caption strong{color:var(--ink2)}
+
+@media(max-width:560px){
+  .bars,.metrics{grid-template-columns:1fr}
+  .ctrl label{width:160px}
+}
+@media(prefers-reduced-motion:reduce){.seg,.tline{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="header">
+    <div class="badge">Working paper — Environmental Research Letters</div>
+    <h1>Credit decomposition: Isometric approach vs NPSP option (c)</h1>
+    <div class="sub">
+      Non-point source pollution regulation as an MRV framework for ocean alkalinity enhancement ·
+      Case study: <a href="https://isometric.com" target="_blank">Planetary Technologies / Isometric</a>,
+      Tufts Cove, Halifax Harbour (625 tCO&#x2082;, June 2025)
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="controls">
+      <div class="ctrl">
+        <label>Environmental stochasticity &#x03B1; (&#x03C3;<sub>e</sub>)
+          <span>wind speed, mixed-layer depth, temperature, biology</span>
+        </label>
+        <input type="range" id="alpha" min="1" max="25" value="8">
+        <span class="ctrl-val" id="av">8%</span>
+      </div>
+      <div class="ctrl">
+        <label>Measurement &amp; model uncertainty &#x03B2; (&#x03C3;<sub>m</sub>)
+          <span>feedstock characterisation, ROMS calibration</span>
+        </label>
+        <input type="range" id="beta" min="1" max="25" value="10">
+        <span class="ctrl-val" id="bv">10%</span>
+      </div>
+      <div class="ctrl">
+        <label>LCA emissions
+          <span>feedstock production, transport, operations</span>
+        </label>
+        <input type="range" id="lca" min="0" max="15" value="4">
+        <span class="ctrl-val" id="lv">4%</span>
+      </div>
+    </div>
+
+    <div class="bars">
+      <div>
+        <div class="bar-label">Current Isometric approach</div>
+        <div class="stack" id="si">
+          <div class="seg" id="ic" style="background:#1a4a6b;color:#c8dce8"></div>
+          <div class="seg" id="ib" style="background:#a85c00;color:#fef3e0"></div>
+          <div class="seg" id="ia" style="background:#b84035;color:#fce8e6"></div>
+          <div class="seg" id="il" style="background:#888;color:#eee"></div>
+        </div>
+      </div>
+      <div>
+        <div class="bar-label">NPSP option (c)</div>
+        <div class="stack" id="sn">
+          <div class="seg" id="nk" style="background:#2a6fa8;color:#e8f2f8"></div>
+          <div class="seg" id="nc" style="background:#1a4a6b;color:#c8dce8"></div>
+          <div class="seg" id="na" style="background:#b84035;color:#fce8e6"></div>
+          <div class="seg" id="nl" style="background:#888;color:#eee"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-val" id="iv">—</div>
+        <div class="metric-lbl">Credits issued — Isometric<br>(% of gross removal x&#x0302;)</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val" id="nv">—</div>
+        <div class="metric-lbl">Credits issued — NPSP option (c)<br>(% of x&#x0302;, before lump-sum k)</div>
+      </div>
+    </div>
+
+    <div class="gain" id="gain"></div>
+
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#1a4a6b"></div>Credits issued</div>
+      <div class="leg"><div class="leg-dot" style="background:#2a6fa8"></div>Lump-sum k (entry costs)</div>
+      <div class="leg"><div class="leg-dot" style="background:#a85c00"></div>&#x03C3;<sub>m</sub> deducted — Isometric only</div>
+      <div class="leg"><div class="leg-dot" style="background:#b84035"></div>&#x03C3;<sub>e</sub> deducted — both approaches</div>
+      <div class="leg"><div class="leg-dot" style="background:#888"></div>LCA emissions</div>
+    </div>
+
+    <div class="caption">
+      <strong>Figure 1.</strong>
+      Decomposition of gross modelled removal x&#x0302;&#xA0;=&#xA0;100% under the current Isometric
+      uncertainty-deduction approach (C&#xA0;=&#xA0;x&#x0302;&#xA0;&#x2212;&#xA0;&#x03C3;<sub>e</sub>&#xA0;&#x2212;&#xA0;&#x03C3;<sub>m</sub>&#xA0;&#x2212;&#xA0;LCA)
+      and NPSP option (c) (C&#xA0;=&#xA0;(x&#x0302;&#xA0;&#x2212;&#xA0;&#x03C3;<sub>e</sub>)&#xA0;&#x00B7;&#xA0;1[x&#x0302;&#xA0;&gt;&#xA0;x&#x0305;]&#xA0;+&#xA0;k&#xA0;&#x2212;&#xA0;LCA).
+      The dashed line marks threshold x&#x0305;. Under option (c), &#x03C3;<sub>m</sub> is managed
+      through the threshold gate rather than as a per-tonne haircut; once the threshold is cleared,
+      measurement uncertainty does not reduce the marginal credit rate. Lump-sum k&#xA0;=&#xA0;5%
+      (illustrative) compensates fixed entry costs independently of removal volume.
+      Baseline values &#x03B1;&#xA0;=&#xA0;8%, &#x03B2;&#xA0;=&#xA0;10%, LCA&#xA0;=&#xA0;4% are consistent
+      with the Tufts Cove uncertainty budget (Isometric 2025b).
+    </div>
+
+  </div>
+</div>
+
+<script>
+const H=260,K=5;
+function px(p){return Math.max(0,(p/100)*H)}
+function seg(id,pct,lbl){
+  const el=document.getElementById(id);
+  el.style.height=px(pct)+'px';
+  el.textContent=pct>=4?lbl:'';
+}
+function tline(sid,pct){
+  const s=document.getElementById(sid);
+  let ln=s.querySelector('.tline');
+  if(!ln){
+    ln=document.createElement('div');ln.className='tline';
+    const t=document.createElement('span');t.className='tline-tag';
+    t.textContent='x\u0305 threshold';ln.appendChild(t);s.appendChild(ln);
+  }
+  ln.style.bottom=px(pct)+'px';
+}
+function update(){
+  const a=+document.getElementById('alpha').value;
+  const b=+document.getElementById('beta').value;
+  const l=+document.getElementById('lca').value;
+  document.getElementById('av').textContent=a+'%';
+  document.getElementById('bv').textContent=b+'%';
+  document.getElementById('lv').textContent=l+'%';
+  const ic=Math.max(0,100-a-b-l);
+  const nc=Math.max(0,100-a-l);
+  const g=nc-ic;
+  seg('ic',ic,'Credits '+ic+'%');
+  seg('ib',b,'\u03C3\u2098 '+b+'%');
+  seg('ia',a,'\u03C3\u2091 '+a+'%');
+  seg('il',l,'LCA '+l+'%');
+  seg('nk',K,'k '+K+'%');
+  seg('nc',nc,'Credits '+nc+'%');
+  seg('na',a,'\u03C3\u2091 '+a+'%');
+  seg('nl',l,'LCA '+l+'%');
+  tline('si',a+l);
+  tline('sn',a+l);
+  document.getElementById('iv').textContent=ic+'%';
+  document.getElementById('nv').textContent=nc+'%';
+  const el=document.getElementById('gain');
+  if(g>0){
+    el.innerHTML='<strong>Credit gain from NPSP option (c): +'+g+'% of gross removal</strong> — '
+      +g+' additional credits per 100 modelled tonnes. \u03C3\u2098 = \u03B2\u00B7x\u0302 '
+      +'is no longer a per-tonne deduction once the threshold is cleared. '
+      +'Environmental integrity is unchanged: x\u0305 still screens for credible removal.';
+  } else {
+    el.innerHTML='<strong>No marginal gain</strong> \u2014 check that \u03B1 + \u03B2 + LCA &lt; 100%.';
+  }
+}
+['alpha','beta','lca'].forEach(id=>
+  document.getElementById(id).addEventListener('input',update)
+);
+update();
+</script>
+</body>
+</html>
